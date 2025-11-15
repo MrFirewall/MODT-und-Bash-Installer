@@ -11,7 +11,8 @@
 shopt -s checkwinsize
 
 # set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "${debian_chroot:-}" ] && [ [ -r /etc/debian_chroot ]; then
+# KORREKTUR: Die Klammern des 'if'-Statements wurden repariert.
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
 
@@ -20,12 +21,12 @@ fi
 # #############################################################
 
 # --- 1. ANSI-Farbcodes ---
-GREEN='\[\033[0;32m\]'
-LIGHT_GREEN='\[\033[1;32m\]'
 BLUE='\[\033[0;34m\]'
-CYAN='\[\033[0;36m\]'
-LIGHT_CYAN='\[\033[1;36m\]' 
+CYAN='\[\033[1;36m\]'
+GREEN='\[\033[0;32m\]'
 YELLOW='\[\033[0;33m\]'
+LIGHT_CYAN='\[\033[1;36m\]' 
+LIGHT_GREEN='\[\033[1;32m\]'
 NC='\[\033[0m\]' # No Color
 
 # --- 2. DYNAMISCHER PROMPT (PS1) ---
