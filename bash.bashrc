@@ -11,7 +11,7 @@
 shopt -s checkwinsize
 
 # set variable identifying the chroot you work in (used in the prompt below)
-# KORRIGIERT: Behebt den Bash-Fehler "binary operator expected"
+# KORRIGIERT: Syntaktisch korrekte POSIX-if-Bedingung
 if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
@@ -31,7 +31,7 @@ NC='\[\033[0m\]' # No Color
 
 # --- 2. DYNAMISCHER PROMPT (PS1) ---
 
-# Funktion zum Abrufen des Git-Branch (wird beibehalten, falls benötigt)
+# Funktion zum Abrufen des Git-Branch
 parse_git_branch() {
   git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
@@ -61,9 +61,11 @@ alias mc='fn(){ local f=$(mktemp);$(which mc) -P $f "$@";[[ -s $f ]] && cd $(cat
 # --- 4. BASH COMPLETION ---
 # enable bash completion in interactive shells
 if ! shopt -oq posix; then
+  # KORRIGIERT: Entfernt die unnötigen 'if/then' Strukturen für BASH-Kompatibilität
   if [ -f /usr/share/bash-completion/bash_completion ]; then
     . /usr/share/bash-completion/bash_completion
-  elif [ [ -f /etc/bash_completion ]; then
+  fi
+  if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
   fi
 fi
