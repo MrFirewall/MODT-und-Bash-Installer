@@ -27,6 +27,11 @@ echo "[INFO] Deaktiviere und entferne alte MOTD-Dateien..."
 find "$TARGET_MOTD_DIR" -type f -not -name "README" -not -name "99-custom-banner" -exec rm -f {} \;
 echo "[INFO] Vorhandene Standard-Banner entfernt."
 
+# NEUE AKTION: Leert die statische /etc/motd
+echo "[INFO] Leere die Datei /etc/motd, um statische Systemmeldungen zu entfernen."
+sudo truncate -s 0 /etc/motd
+# Oder alternativ: echo "" > /etc/motd
+
 # --- 3. ERSTELLUNG DER NEUEN BASH.BASHRC ---
 
 echo "[INFO] Erstelle die globale BASH.BASHRC ($TARGET_BASHRC)..."
@@ -64,7 +69,7 @@ NC='\[\033[0m\]' # No Color
 
 # --- 2. DYNAMISCHER PROMPT (PS1) ---
 
-# Funktion zum Abrufen des Git-Branch
+# Funktion zum Abrufen des Git-Branch (wird beibehalten, falls benötigt)
 parse_git_branch() {
   git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
@@ -128,6 +133,7 @@ EOF
 echo "[ERFOLG] Neue $TARGET_BASHRC erstellt."
 
 # --- 4. ERSTELLUNG DER NEUEN 99-CUSTOM-BANNER ---
+# ... (Rest des Skripts für 99-custom-banner bleibt unverändert) ...
 
 echo "[INFO] Erstelle den $TARGET_BANNER..."
 cat > "$TARGET_BANNER" << 'EOF'
