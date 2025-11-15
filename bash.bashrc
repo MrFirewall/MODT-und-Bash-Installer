@@ -11,7 +11,7 @@
 shopt -s checkwinsize
 
 # set variable identifying the chroot you work in (used in the prompt below)
-# KORREKTUR: Die Klammern des 'if'-Statements wurden repariert.
+# KORRIGIERT: Behebt den Bash-Fehler "binary operator expected"
 if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
@@ -21,12 +21,12 @@ fi
 # #############################################################
 
 # --- 1. ANSI-Farbcodes ---
-BLUE='\[\033[0;34m\]'
-CYAN='\[\033[1;36m\]'
 GREEN='\[\033[0;32m\]'
-YELLOW='\[\033[0;33m\]'
-LIGHT_CYAN='\[\033[1;36m\]' 
 LIGHT_GREEN='\[\033[1;32m\]'
+BLUE='\[\033[0;34m\]'
+CYAN='\[\033[0;36m\]'
+LIGHT_CYAN='\[\033[1;36m\]' 
+YELLOW='\[\033[0;33m\]'
 NC='\[\033[0m\]' # No Color
 
 # --- 2. DYNAMISCHER PROMPT (PS1) ---
@@ -63,7 +63,7 @@ alias mc='fn(){ local f=$(mktemp);$(which mc) -P $f "$@";[[ -s $f ]] && cd $(cat
 if ! shopt -oq posix; then
   if [ -f /usr/share/bash-completion/bash_completion ]; then
     . /usr/share/bash-completion/bash_completion
-  elif [ -f /etc/bash_completion ]; then
+  elif [ [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
   fi
 fi
