@@ -1,0 +1,90 @@
+#!/bin/sh
+#
+# /etc/update-motd.d/99-custom-banner
+# Stabile Version ohne mpstat, mit korrekter GB-RAM-Anzeige.
+
+# 1. Globale Infos
+HOSTNAME=$(hostname)
+IP_ADDRESS=$(hostname -I | awk '{print $1}')
+OS_VERSION=$(grep PRETTY_NAME /etc/os-release | cut -d'"' -f2)
+
+# --- DYNAMISCHE SYSTEM-INFOS ---
+UPTIME=$(uptime -p | sed 's/up //')
+CPU_CORES=$(nproc)
+CPU_LOAD=$(uptime | awk -F'load average: ' '{print $2}' | cut -d, -f1) # 1-min Load
+
+# RAM-Berechnung in GB (formatiert auf 1 Nachkommastelle)
+RAM_USED_GB=$(free -m | awk 'NR==2{printf "%.1f", $3/1024}') 
+RAM_TOTAL_GB=$(free -m | awk 'NR==2{printf "%.1f", $2/1024}') 
+RAM_PERCENT=$(free -m | awk 'NR==2{printf "%.0f%%", $3*100/$2 }')
+
+# --- ANPASSBARE VARIABLEN ---
+SERVICE_NAME="$(echo "$HOSTNAME" | sed -e 's/-/ /g' -e 's/\b\(.\)/\u\1/g' | sed 's/Lxc/LXC/g' | sed 's/Vm/VM/g')"
+DEIN_NAME="MrFirewall"
+
+# 2. ANSI-Farbcodes
+CYAN="\033[1;36m"
+GREEN="\033[1;32m"
+YELLOW="\033[1;33m"
+RED="\033[1;31m"
+BLUE="\033[1;34m"
+NC="\033[0m" # Reset
+
+# --- DYNAMISCHE MOUNT-STATUS PRÜFUNG ---
+
+check_mount_status() {
+    MOUNT_POINT="$1"
+    FS_TYPE="$2"
+    
+    # Prüft, ob der Mountpoint verbunden und zugreifbar ist
+    if mountpoint -q "$MOUNT_POINT" && find "$MOUNT_POINT" -maxdepth 0 -exec test -r {} \; 2>/dev/null; then
+        STATUS_COLOR="$GREEN"
+        STATUS_TEXT="STABIL ✅"
+    else
+        STATUS_COLOR="$RED"
+        STATUS_TEXT="DEFEKT ❌ (PRÜFEN SIE HOST/NETZWERK)"
+    fi
+    
+    # Korrigierte Ausgabe für saubere Farben
+    printf " %s [%s]: %b%s%b\n" "$MOUNT_POINT" "$FS_TYPE" "$STATUS_COLOR" "$STATUS_TEXT" "$NC"
+}
+
+# 3. Hauptbanner ausgeben
+printf "\n${CYAN}====================================================${NC}\n"
+printf " ✨ ${BLUE}%s ${NC} | 🧑‍💻 Statusbericht bereitgestellt von: ${YELLOW}%s${NC}\n" "$SERVICE_NAME" "$DEIN_NAME"
+printf "${CYAN}====================================================${NC}\n"
+
+# 4. Allgemeine Systeminformationen
+printf " 🏠 Hostname: ${GREEN}%s${NC} | 💡 IP-Adresse: ${GREEN}%s${NC}\n" "$HOSTNAME" "$IP_ADDRESS"
+printf " 🖥️ OS-Version: ${GREEN}%s${NC}\n" "$OS_VERSION"
+
+# 5. Dynamische Performance-Infos (ZWEISPALTIG)
+printf "\n--- ${CYAN}SYSTEM PERFORMANCE STATUS ${NC} ---\n"
+printf " %-20s %b%-18s%b\n" "⏳ Uptime:" "$GREEN" "$UPTIME" "$NC"
+
+# KORRIGIERTE RAM-AUSGABE IN GB
+printf " %-20s %b%s GB%b (%s)\n" "🧠 RAM Used:" "$YELLOW" "$RAM_USED_GB" "$NC" "$RAM_PERCENT" 
+printf " %-20s %b%s GB%b\n" "🧠 RAM Total:" "$YELLOW" "$RAM_TOTAL_GB" "$NC"
+
+printf " %-20s %s Kerne\n" "⚡ CPU Cores:" "$CPU_CORES"
+printf " %-20s %b%s%b\n" "🔥 CPU Load (1min):" "$YELLOW" "$CPU_LOAD" "$NC"
+
+
+# 6. Dynamische Mounts abrufen und Status ausgeben
+printf "\n--- ${CYAN}KRITISCHER SPEICHER STATUS ${NC} ---\n"
+
+grep -E 'nfs|cifs|smb|virtiofs' /proc/mounts | while read LINE ; do
+    MOUNT_POINT=$(echo "$LINE" | awk '{print $2}')
+    FS_TYPE=$(echo "$LINE" | awk '{print $3}')
+
+    case "$MOUNT_POINT" in
+        /mnt/*)
+            check_mount_status "$MOUNT_POINT" "$FS_TYPE"
+            ;;
+        *)
+            ;;
+    esac
+done
+
+printf "${CYAN}====================================================${NC}\n"
+printf "\n"
